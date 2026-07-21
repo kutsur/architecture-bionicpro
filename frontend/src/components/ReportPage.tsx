@@ -14,18 +14,20 @@ interface ReportData {
   period_end: string | null;
 }
 
-interface ReportResponse {
+interface ReportMeta {
   username: string;
   status: 'ready' | 'no_data';
+  source?: 's3' | 'olap';
+  url?: string;
   message?: string;
-  report?: ReportData;
 }
 
 const ReportPage: React.FC = () => {
   const { keycloak, initialized } = useKeycloak();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [data, setData] = useState<ReportResponse | null>(null);
+  const [meta, setMeta] = useState<ReportMeta | null>(null);
+  const [report, setReport] = useState<ReportData | null>(null);
 
   const getReport = async () => {
     if (!keycloak?.token) {
@@ -35,20 +37,29 @@ const ReportPage: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      setData(null);
+      setMeta(null);
+      setReport(null);
 
       await keycloak.updateToken(30);
 
       const response = await fetch(`${process.env.REACT_APP_API_URL}/reports`, {
         headers: { Authorization: `Bearer ${keycloak.token}` },
       });
-
       if (!response.ok) {
         const message = await response.text();
         throw new Error(message || `Request failed (${response.status})`);
       }
 
-      setData(await response.json());
+      const info: ReportMeta = await response.json();
+      setMeta(info);
+
+      if (info.status === 'ready' && info.url) {
+        const cdnResponse = await fetch(info.url);
+        if (!cdnResponse.ok) {
+          throw new Error(`CDN fetch failed (${cdnResponse.status})`);
+        }
+        setReport(await cdnResponse.json());
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
@@ -72,8 +83,6 @@ const ReportPage: React.FC = () => {
       </div>
     );
   }
-
-  const report = data?.report;
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
@@ -102,14 +111,28 @@ const ReportPage: React.FC = () => {
           <div className="mt-4 p-4 bg-red-100 text-red-700 rounded">{error}</div>
         )}
 
-        {data?.status === 'no_data' && (
+        {meta?.status === 'no_data' && (
           <div className="mt-4 p-4 bg-yellow-100 text-yellow-800 rounded">
-            {data.message}
+            {meta.message}
+          </div>
+        )}
+
+        {meta?.status === 'ready' && (
+          <div className="mt-4 text-sm text-gray-500">
+            Источник: {meta.source === 's3' ? 'кеш S3/CDN' : 'OLAP (сформирован и закеширован)'}
+            {meta.url && (
+              <>
+                {' '}
+                <a href={meta.url} target="_blank" rel="noreferrer" className="text-blue-500 underline">
+                  ссылка на CDN
+                </a>
+              </>
+            )}
           </div>
         )}
 
         {report && (
-          <div className="mt-6 border-t pt-4">
+          <div className="mt-4 border-t pt-4">
             <h2 className="text-lg font-semibold mb-2">
               {report.full_name} ({report.username})
             </h2>

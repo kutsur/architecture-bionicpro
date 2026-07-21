@@ -5,7 +5,17 @@ from typing import List, Tuple
 
 from airflow.decorators import dag, task
 from clickhouse_driver import Client
+import boto3
 import psycopg2
+
+S3_CONNECTION = {
+    "endpoint_url": "http://minio:9000",
+    "aws_access_key_id": "minioadmin",
+    "aws_secret_access_key": "minioadmin",
+    "region_name": "us-east-1",
+}
+S3_BUCKET = "bionicpro-reports"
+S3_REPORTS_PREFIX = "reports/"
 
 CRM_CONNECTION = {
     "host": "crm_db",
@@ -123,9 +133,20 @@ def crm_to_olap_reporting():
             """
         )
 
+    @task()
+    def invalidate_cached_reports():
+        s3 = boto3.client("s3", **S3_CONNECTION)
+        paginator = s3.get_paginator("list_objects_v2")
+        keys = []
+        for page in paginator.paginate(Bucket=S3_BUCKET, Prefix=S3_REPORTS_PREFIX):
+            keys.extend({"Key": obj["Key"]} for obj in page.get("Contents", []))
+        if keys:
+            s3.delete_objects(Bucket=S3_BUCKET, Delete={"Objects": keys})
+
     customers = fetch_customers()
     loaded = load_customers(customers)
-    loaded >> build_reporting_mart()
+    mart = build_reporting_mart()
+    loaded >> mart >> invalidate_cached_reports()
 
 
 crm_to_olap_reporting()

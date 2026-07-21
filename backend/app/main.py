@@ -6,6 +6,7 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from . import storage
 from .auth import KeycloakAuthenticator
 from .database import create_clickhouse_client, fetch_user_report
 
@@ -59,6 +60,16 @@ def get_report(user: Dict[str, Any] = Depends(get_current_user)) -> Dict[str, An
             detail="preferred_username missing in token",
         )
 
+    key = storage.object_key(username)
+
+    if storage.report_exists(key):
+        return {
+            "username": username,
+            "status": "ready",
+            "source": "s3",
+            "url": storage.cdn_url(key),
+        }
+
     client = create_clickhouse_client()
     try:
         report = fetch_user_report(client, username)
@@ -72,4 +83,10 @@ def get_report(user: Dict[str, Any] = Depends(get_current_user)) -> Dict[str, An
             "message": "Отчёт ещё не готов: данные за запрошенный период не обработаны ETL.",
         }
 
-    return {"username": username, "status": "ready", "report": report}
+    storage.put_report(key, report)
+    return {
+        "username": username,
+        "status": "ready",
+        "source": "olap",
+        "url": storage.cdn_url(key),
+    }
