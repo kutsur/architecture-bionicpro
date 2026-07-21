@@ -58,6 +58,14 @@ services:
 
   crm_db:
     image: postgres:14
+    command:
+      - postgres
+      - -c
+      - wal_level=logical
+      - -c
+      - max_wal_senders=10
+      - -c
+      - max_replication_slots=10
     environment:
       POSTGRES_DB: crm_db
       POSTGRES_USER: crm_user
@@ -90,12 +98,72 @@ services:
       - clickhouse_data:/var/lib/clickhouse
       - ./olap-db:/docker-entrypoint-initdb.d
       - ./olap-db:/var/lib/clickhouse/user_files
+    depends_on:
+      - kafka
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:8123/ping | grep -qi ok"]
       interval: 5s
       timeout: 3s
       retries: 30
       start_period: 20s
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.7.1
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+
+  kafka:
+    image: confluentinc/cp-kafka:7.7.1
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "29092:29092"
+    depends_on:
+      - zookeeper
+
+  kafka-connect:
+    image: quay.io/debezium/connect:2.7
+    environment:
+      BOOTSTRAP_SERVERS: kafka:9092
+      GROUP_ID: bionicpro-debezium-connect
+      CONFIG_STORAGE_TOPIC: bionicpro_connect_configs
+      OFFSET_STORAGE_TOPIC: bionicpro_connect_offsets
+      STATUS_STORAGE_TOPIC: bionicpro_connect_statuses
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+    ports:
+      - "8083:8083"
+    depends_on:
+      - kafka
+      - crm_db
+
+  debezium_connector_init:
+    image: curlimages/curl:8.10.1
+    volumes:
+      - ./debezium:/debezium:ro
+    entrypoint:
+      - sh
+      - -c
+      - |
+        until curl -fsS http://kafka-connect:8083/connectors >/dev/null; do sleep 2; done
+        curl -fsS -X PUT -H 'Content-Type: application/json' \
+          --data @/debezium/crm-connector.json \
+          http://kafka-connect:8083/connectors/bionicpro-crm-postgres-connector/config
+    depends_on:
+      - kafka-connect
+    restart: "no"
 
   backend:
     build:
@@ -107,6 +175,7 @@ services:
       CLICKHOUSE_USER: demo
       CLICKHOUSE_PASSWORD: demo
       CLICKHOUSE_DATABASE: default
+      REPORT_TABLE: report_user_telemetry_cdc
       KEYCLOAK_WELL_KNOWN_URL: http://keycloak:8080/realms/reports-realm/.well-known/openid-configuration
       KEYCLOAK_ISSUER_OVERRIDE: http://localhost:8080/realms/reports-realm
       KEYCLOAK_AUDIENCE: ""

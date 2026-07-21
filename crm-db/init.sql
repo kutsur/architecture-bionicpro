@@ -11,3 +11,5 @@ COPY customers(username, full_name, email, birth_date, gender, country)
 FROM '/docker-entrypoint-initdb.d/crm.csv'
 DELIMITER ','
 CSV HEADER;
+
+ALTER TABLE customers REPLICA IDENTITY FULL;

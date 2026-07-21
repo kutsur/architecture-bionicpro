@@ -8,6 +8,8 @@ from fastapi import HTTPException, status
 
 logger = logging.getLogger(__name__)
 
+REPORT_TABLE = os.getenv("REPORT_TABLE", "report_user_telemetry_cdc")
+
 REPORT_COLUMNS = [
     "username",
     "full_name",
@@ -42,7 +44,7 @@ def fetch_user_report(client: Client, username: str) -> Optional[Dict[str, Any]]
     try:
         result = client.query(
             f"SELECT {', '.join(REPORT_COLUMNS)} "
-            "FROM report_user_telemetry "
+            f"FROM {REPORT_TABLE} "
             "WHERE username = {username:String} "
             "LIMIT 1",
             parameters={"username": username},
