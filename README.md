@@ -1,2 +1,1 @@
-# architecture-bionicpro
-Yandex Course
+
