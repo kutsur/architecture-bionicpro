@@ -1,0 +1,6 @@
+username,full_name,email,birth_date,gender,country
+prothetic1,Ivan Petrov,ivan.petrov@example.com,1988-03-12,male,Russia
+prothetic2,Maria Sidorova,maria.sidorova@example.com,1992-07-24,female,Russia
+prothetic3,Alexey Smirnov,alexey.smirnov@example.com,1985-11-02,male,Russia
+user1,Oleg Kuznetsov,oleg.kuznetsov@example.com,1990-01-01,male,Russia
+user2,Elena Volkova,elena.volkova@example.com,1991-02-14,female,Russia
