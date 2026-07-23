@@ -1,0 +1,68 @@
+<mxfile host="app.diagrams.net" agent="Claude" version="24.0.0">
+  <diagram name="Reports-S3-CDN" id="bionicpro-reports-cdn">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2000" pageHeight="1150" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <object placeholders="1" c4Name="Пилот протеза" c4Type="Person" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%]&lt;/div&gt;" id="pilot">
+          <mxCell style="html=1;fontSize=11;dashed=0;whiteSpace=wrap;fillColor=#6C6477;strokeColor=#4D4D4D;fontColor=#ffffff;shape=mxgraph.c4.person2;align=center;resizable=0;" parent="1" vertex="1">
+            <mxGeometry x="40" y="120" width="180" height="150" as="geometry" />
+          </mxCell>
+        </object>
+
+        <object placeholders="1" c4Name="reports-frontend" c4Type="Container" c4Technology="React SPA" c4Description="Получает от API ссылку на CDN и скачивает отчёт с CDN" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#E6E6E6&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="spa">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#23A2D9;fontColor=#ffffff;align=center;arcSize=10;strokeColor=#0E7DAD;resizable=0;" parent="1" vertex="1">
+            <mxGeometry x="320" y="110" width="240" height="150" as="geometry" />
+          </mxCell>
+        </object>
+
+        <object placeholders="1" c4Name="Report Service (API)" c4Type="Container" c4Technology="FastAPI" c4Description="Проверяет S3: есть -> ссылка на CDN (без OLAP); нет -> читает витрину, кладёт в S3, отдаёт ссылку на CDN" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#E6E6E6&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="api">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#23A2D9;fontColor=#ffffff;align=center;arcSize=10;strokeColor=#0E7DAD;resizable=0;" parent="1" vertex="1">
+            <mxGeometry x="700" y="100" width="260" height="170" as="geometry" />
+          </mxCell>
+        </object>
+
+        <object placeholders="1" c4Name="Keycloak" c4Type="Container" c4Technology="OIDC" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;" id="kc">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#1BA1E2;fontColor=#ffffff;align=center;arcSize=10;strokeColor=#0E7DAD;resizable=0;" parent="1" vertex="1">
+            <mxGeometry x="700" y="330" width="260" height="90" as="geometry" />
+          </mxCell>
+        </object>
+
+        <object placeholders="1" c4Name="CDN" c4Type="Container" c4Technology="Nginx reverse proxy + cache" c4Description="Кеширует отчёты, раздаёт статику. X-Cache-Status HIT/MISS, короткий TTL" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#E6E6E6&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="cdn">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#1BA1E2;fontColor=#ffffff;align=center;arcSize=10;strokeColor=#0E7DAD;resizable=0;" parent="1" vertex="1">
+            <mxGeometry x="320" y="470" width="240" height="150" as="geometry" />
+          </mxCell>
+        </object>
+
+        <object placeholders="1" c4Name="Object Storage (S3)" c4Type="Container" c4Technology="MinIO" c4Description="Бакет bionicpro-reports, ключ reports/{username}.json" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#E6E6E6&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="s3">
+          <mxCell style="shape=cylinder3;size=15;whiteSpace=wrap;html=1;boundedLbl=1;rounded=0;fillColor=#1BA1E2;fontSize=12;fontColor=#ffffff;align=center;strokeColor=#0E7DAD;resizable=0;" parent="1" vertex="1">
+            <mxGeometry x="720" y="470" width="240" height="150" as="geometry" />
+          </mxCell>
+        </object>
+
+        <object placeholders="1" c4Name="OLAP (витрина)" c4Type="Container" c4Technology="ClickHouse" c4Description="report_user_telemetry" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#E6E6E6&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="olap">
+          <mxCell style="shape=cylinder3;size=15;whiteSpace=wrap;html=1;boundedLbl=1;rounded=0;fillColor=#23A2D9;fontSize=12;fontColor=#ffffff;align=center;strokeColor=#0E7DAD;resizable=0;" parent="1" vertex="1">
+            <mxGeometry x="1120" y="470" width="240" height="150" as="geometry" />
+          </mxCell>
+        </object>
+
+        <object placeholders="1" c4Name="ETL" c4Type="Container" c4Technology="Apache Airflow" c4Description="Строит витрину по расписанию и инвалидирует кеш отчётов в S3" label="&lt;font style=&quot;font-size: 16px&quot;&gt;&lt;b&gt;%c4Name%&lt;/b&gt;&lt;/font&gt;&lt;div&gt;[%c4Type%: %c4Technology%]&lt;/div&gt;&lt;br&gt;&lt;div&gt;&lt;font style=&quot;font-size: 11px&quot;&gt;&lt;font color=&quot;#E6E6E6&quot;&gt;%c4Description%&lt;/font&gt;&lt;/div&gt;" id="etl">
+          <mxCell style="rounded=1;whiteSpace=wrap;html=1;fontSize=11;fillColor=#23A2D9;fontColor=#ffffff;align=center;arcSize=10;strokeColor=#0E7DAD;resizable=0;" parent="1" vertex="1">
+            <mxGeometry x="1120" y="770" width="240" height="150" as="geometry" />
+          </mxCell>
+        </object>
+
+        <mxCell id="c1" value="Запрос / скачивание" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" parent="1" source="pilot" target="spa" edge="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c2" value="GET /reports (Bearer)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" parent="1" source="spa" target="api" edge="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c3" value="Валидация JWT" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" parent="1" source="api" target="kc" edge="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c4" value="head/put reports/{username}.json" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" parent="1" source="api" target="s3" edge="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c5" value="SELECT только при промахе кеша" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" parent="1" source="api" target="olap" edge="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c6" value="Скачать отчёт по CDN-ссылке" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" parent="1" source="spa" target="cdn" edge="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c7" value="proxy + cache" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" parent="1" source="cdn" target="s3" edge="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c8" value="Построение витрины" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" parent="1" source="etl" target="olap" edge="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="c9" value="Инвалидация кеша (удаление reports/)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;" parent="1" source="etl" target="s3" edge="1"><mxGeometry relative="1" as="geometry" /></mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

@@ -1,0 +1,15 @@
+username,prosthesis_type,muscle_group,signal_frequency,signal_amplitude,signal_duration,signal_time
+prothetic1,hand,forearm,500,12.34,120,2025-06-01 09:00:00
+prothetic1,hand,forearm,510,13.10,110,2025-06-01 09:05:00
+prothetic1,hand,biceps,480,11.90,130,2025-06-02 10:00:00
+prothetic1,hand,forearm,505,12.75,115,2025-06-03 11:30:00
+prothetic2,leg,quadriceps,600,18.20,150,2025-06-01 08:00:00
+prothetic2,leg,quadriceps,590,17.80,140,2025-06-02 08:30:00
+prothetic2,leg,calf,610,19.05,160,2025-06-03 09:15:00
+prothetic3,hand,forearm,495,10.50,100,2025-06-01 14:00:00
+prothetic3,hand,forearm,500,10.90,105,2025-06-02 14:20:00
+prothetic3,hand,biceps,470,9.80,95,2025-06-04 15:00:00
+user1,hand,forearm,520,14.00,125,2025-06-01 12:00:00
+user1,hand,forearm,515,13.60,120,2025-06-05 12:30:00
+user2,leg,quadriceps,580,16.40,145,2025-06-02 16:00:00
+user2,leg,calf,595,17.10,155,2025-06-06 16:45:00
