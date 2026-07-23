@@ -27,7 +27,17 @@ CRM (Postgres, wal_level=logical)
 5. **Витрина.** Телеметрия агрегируется в разрезе пользователя через MV `mv_telemetry_agg` (`AggregatingMergeTree`). Витрина `report_user_telemetry_cdc` соединяет актуальный срез CRM (`FINAL`, `is_deleted = 0`) с агрегатами телеметрии.
 6. **API переведён на новую витрину.** Таблица берётся из `REPORT_TABLE` (по умолчанию `report_user_telemetry_cdc`), см. [backend/app/database.py](../backend/app/database.py).
 
-Airflow больше не читает CRM массово: DAG сведён к периодической инвалидации кеша отчётов в S3 ([airflow/dags/reports_cache_invalidation.py](../airflow/dags/reports_cache_invalidation.py)).
+Airflow больше не читает CRM массово.
+
+## Инвалидация кеша по CDC-событию (по правке ревью)
+
+Раньше кеш S3 чистился только по расписанию Airflow (раз в час), из-за чего пользователь мог получить старый отчёт. Теперь инвалидация привязана к CDC-событию:
+
+- Сервис [cache-invalidator/consumer.py](../cache-invalidator/consumer.py) слушает тот же топик `bionicpro_crm.public.customers`.
+- На каждое изменение (`INSERT`/`UPDATE`/`DELETE`) он берёт `username` из события и удаляет `reports/{username}.json` из S3.
+- Следующий запрос `/reports` пересобирает отчёт из живой витрины `report_user_telemetry_cdc`.
+
+Так стейл-отчёт исчезает в секунды после изменения в CRM, без ожидания часового DAG. Airflow-DAG [reports_cache_invalidation.py](../airflow/dags/reports_cache_invalidation.py) оставлен только как редкий страховочный полный сброс.
 
 ## Проверка
 

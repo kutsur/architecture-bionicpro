@@ -22,3 +22,17 @@
 
 3. **Поддержка разных внешних удостоверяющих служб в разных странах.**
    Keycloak в роли Identity Broker федерирует несколько внешних IdP (по одному на страну/представительство). Добавление новой страны = новый brokered IdP + LDAP federation, без изменения фронтенда и бизнес-сервисов.
+
+## Яндекс ID (Identity Brokering)
+
+Через Identity Brokering подключён внешний провайдер `yandex` ([keycloak/realm-export.json](../keycloak/realm-export.json), секция `identityProviders`).
+
+- `providerId: oidc`, эндпоинты Яндекс OAuth: `oauth.yandex.ru/authorize`, `oauth.yandex.ru/token`, профиль из `login.yandex.ru/info`.
+- PKCE на брокере (`pkceEnabled: true`, `S256`).
+- Согласие пользователя на использование данных: `prompt=consent` + экран проверки профиля на `first broker login` (`updateProfileFirstLoginMode: on`).
+- Профиль из Яндекса переносится мапперами в учётную запись: `default_email -> email`, `first_name -> firstName`, `last_name -> lastName`, `login -> username`; вошедшему через Яндекс выдаётся роль `prothetic_user`.
+- `clientId`/`clientSecret` в realm это заглушки, подставляются реальные значения из приложения Яндекс OAuth (`YANDEX_CLIENT_ID`, `YANDEX_CLIENT_SECRET`).
+
+Кнопка входа через Яндекс на странице логина realm `reports-realm`:
+
+![Yandex ID на странице логина Keycloak](./screenshots/yandex-id-login.png)

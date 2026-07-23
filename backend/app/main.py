@@ -67,7 +67,7 @@ def get_report(user: Dict[str, Any] = Depends(get_current_user)) -> Dict[str, An
             "username": username,
             "status": "ready",
             "source": "s3",
-            "url": storage.cdn_url(key),
+            "url": storage.signed_url(key),
         }
 
     client = create_clickhouse_client()
@@ -88,5 +88,5 @@ def get_report(user: Dict[str, Any] = Depends(get_current_user)) -> Dict[str, An
         "username": username,
         "status": "ready",
         "source": "olap",
-        "url": storage.cdn_url(key),
+        "url": storage.signed_url(key),
     }
